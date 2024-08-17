@@ -1,0 +1,5 @@
+JWT_SECRET="SANHOKBGMI"
+
+
+
+module.exports = JWT_SECRET
