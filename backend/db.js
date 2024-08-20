@@ -4,7 +4,7 @@ const { type } = require("os")
 mongoose.connect("mongodb+srv://anuragadmin:KIkBqYjyBQZXxJ33@cluster0.3sk1xst.mongodb.net/Pamanta-Pay")
 
 const UserInfo=new mongoose.Schema({
-    Username:{
+    username:{
         type:String,
         required:true,
         unique:true,
@@ -25,7 +25,7 @@ const UserInfo=new mongoose.Schema({
     },
     lastName:{
         type:String,
-        required:false
+        
     }
 })
 
