@@ -3,7 +3,8 @@ const app=express()
 const zod=require("zod");
 const jwt=require("jsonwebtoken")
 const { Users } = require("../db");
-const JWT_SECRET=require("../config")
+const JWT_SECRET=require("../config");
+const { authMiddleware } = require("./Middleware");
 const UserValidSchema=zod.object({
     username:zod.string(),
     password:zod.string(),
@@ -76,6 +77,27 @@ app.post("/SignIn",async (req,res)=> {
     console.log(error);
     return res.status(500).json({msg:"Some error while signin"})
 }
+})
+
+const updateValid=zod.object({
+    password:zod.string().optional(),
+    firstName:zod.string().optional(),
+    lastName:zod.string().optional()
+})
+
+app.put("/",authMiddleware,async(req,res)=>{
+    const {success}=updateValid.safeParse(req.body);
+    if(!success){
+        return res.status(411).json({
+            msg:"error while updating the information"
+        })
+    }
+
+    await Users.updateOne(req.body,{
+        id:req.userId
+    })
+
+    res.json({msg:"Update successful"})
 })
 
 
