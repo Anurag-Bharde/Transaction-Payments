@@ -5,6 +5,8 @@ const jwt=require("jsonwebtoken")
 const { Users } = require("../db");
 const JWT_SECRET=require("../config");
 const { authMiddleware } = require("./Middleware");
+
+
 const UserValidSchema=zod.object({
     username:zod.string(),
     password:zod.string(),
@@ -56,16 +58,23 @@ catch(error){
 })
 
 
+const signinBody = zod.object({
+    username: zod.string().email(),
+	password: zod.string()
+})
 app.post("/SignIn",async (req,res)=> {
-    const username=req.body.username;
-    const password=req.body.password;
-
+    const {success} = signinBody.safeParse(req.body)
+    if(!success){
+        return res.status(411).json({
+            msg:"Email already taken"
+        })
+    }
     try{
-        const valid=await Users.findOne({username:username});
+        const valid=await Users.findOne({username:req.body.username});
     if(!valid){
         return res.status(404).json({msg:"The username is not valid"})
     }
-    if(valid.password!==password){
+    if(valid.password!==req.body.password){
        return res.status(403).json({msg:"The password is not valid"})
     }
     
@@ -100,6 +109,30 @@ app.put("/",authMiddleware,async(req,res)=>{
     res.json({msg:"Update successful"})
 })
 
+app.get("/bulk",async(req,res)=>{
+    const filter=req.query.filter || "";
+
+    const users=await Users.find({
+        $or:[{
+            firstName:{
+                "$regex":filter
+            }
+        },{
+            lastName:{
+                "$regex":filter
+            }
+        }]
+    })
+
+    res.json({
+        user:Users.map(user=>({
+            username:user.username,
+            firstName:user.firstName,
+            lastName:user.lastName,
+            _id:user._id
+        }))
+    })
+})
 
 
 
